@@ -34,7 +34,15 @@ export function AuthProvider({ children }) {
   };
 
   const register = async (formData) => {
-    await apiRegister(formData);
+    const payload = {
+      email: formData.email,
+      password: formData.password,
+      first_name: formData.first_name,
+      last_name: formData.last_name,
+      role: formData.role || (formData.is_employer ? 'EMPLOYER' : 'JOB_SEEKER'),
+    };
+
+    await apiRegister(payload);
     await login(formData.email, formData.password);
   };
 

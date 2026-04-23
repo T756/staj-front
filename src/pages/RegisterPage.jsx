@@ -12,13 +12,24 @@ export default function RegisterPage() {
     first_name: '',
     last_name: '',
     is_employer: false,
+    role: '',
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const set = (field) => (e) => {
     const value = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((f) => {
+      if (field === 'is_employer') {
+        return {
+          ...f,
+          is_employer: value,
+          role: value ? 'EMPLOYER' : 'JOB_SEEKER',
+        };
+      }
+
+      return { ...f, [field]: value };
+    });
   };
 
   const handleSubmit = async (e) => {
