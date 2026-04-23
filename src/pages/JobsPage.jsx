@@ -4,11 +4,11 @@ import JobCard from '../components/JobCard';
 
 const JOB_TYPES = [
   { value: '', label: 'All Types' },
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'remote', label: 'Remote' },
+  { value: 'FULL_TIME', label: 'Full-time' },
+  { value: 'PART_TIME', label: 'Part-time' },
+  { value: 'CONTRACT', label: 'Contract' },
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'REMOTE', label: 'Remote' },
 ];
 
 export default function JobsPage() {
@@ -17,7 +17,6 @@ export default function JobsPage() {
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
   const [jobType, setJobType] = useState('');
-  const [location, setLocation] = useState('');
   const [nextUrl, setNextUrl] = useState(null);
   const [prevUrl, setPrevUrl] = useState(null);
   const [count, setCount] = useState(0);
@@ -28,8 +27,7 @@ export default function JobsPage() {
     try {
       const { data } = await listJobs({
         search: search || undefined,
-        job_type: jobType || undefined,
-        location: location || undefined,
+        employment_type: jobType || undefined,
         ...params,
       });
       // Handle both paginated and non-paginated responses
@@ -47,7 +45,7 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, jobType, location]);
+  }, [search, jobType]);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchJobs(), 300);
@@ -66,13 +64,6 @@ export default function JobsPage() {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by title, company, keyword…"
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Location"
-          className="w-full sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <select
           value={jobType}

@@ -59,7 +59,7 @@ export default function JobDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
-            <p className="text-gray-500 mt-1 text-lg">{job.company_name || job.company}</p>
+            <p className="text-gray-500 mt-1 text-lg">{job.employer_name || job.company_name || job.company}</p>
           </div>
           {!isOwner && (
             applied ? (
@@ -84,9 +84,9 @@ export default function JobDetailPage() {
               <span>📍</span> {job.location}
             </span>
           )}
-          {job.job_type && (
+          {job.employment_type && (
             <span className="flex items-center gap-1.5 bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full capitalize">
-              {job.job_type.replace('_', ' ')}
+              {job.employment_type.toLowerCase().replace(/_/g, ' ')}
             </span>
           )}
           {job.salary_min && job.salary_max && (

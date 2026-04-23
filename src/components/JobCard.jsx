@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 
 const TYPE_COLORS = {
-  full_time: 'bg-green-100 text-green-800',
-  part_time: 'bg-blue-100 text-blue-800',
-  contract: 'bg-orange-100 text-orange-800',
-  internship: 'bg-purple-100 text-purple-800',
-  remote: 'bg-teal-100 text-teal-800',
+  FULL_TIME: 'bg-green-100 text-green-800',
+  PART_TIME: 'bg-blue-100 text-blue-800',
+  CONTRACT: 'bg-orange-100 text-orange-800',
+  INTERNSHIP: 'bg-purple-100 text-purple-800',
+  REMOTE: 'bg-teal-100 text-teal-800',
 };
 
 export default function JobCard({ job }) {
-  const typeLabel = job.job_type?.replace('_', ' ') || 'Full-time';
-  const colorClass = TYPE_COLORS[job.job_type] || 'bg-gray-100 text-gray-700';
+  const typeLabel = job.employment_type?.toLowerCase().replace(/_/g, ' ') || 'full time';
+  const colorClass = TYPE_COLORS[job.employment_type] || 'bg-gray-100 text-gray-700';
 
   return (
     <Link
@@ -22,7 +22,7 @@ export default function JobCard({ job }) {
           <h3 className="font-semibold text-gray-900 text-lg truncate">
             {job.title}
           </h3>
-          <p className="text-gray-500 text-sm mt-0.5">{job.company_name || job.company}</p>
+          <p className="text-gray-500 text-sm mt-0.5">{job.employer_name || job.company_name || job.company}</p>
           {job.location && (
             <p className="text-gray-400 text-sm mt-1">📍 {job.location}</p>
           )}

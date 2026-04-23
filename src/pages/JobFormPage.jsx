@@ -2,12 +2,18 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { createJob, updateJob, getJob } from '../api/jobs';
 
-const JOB_TYPES = [
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'remote', label: 'Remote' },
+const EMPLOYMENT_TYPES = [
+  { value: 'FULL_TIME', label: 'Full-time' },
+  { value: 'PART_TIME', label: 'Part-time' },
+  { value: 'CONTRACT', label: 'Contract' },
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'REMOTE', label: 'Remote' },
+];
+
+const EXPERIENCE_LEVELS = [
+  { value: 'ENTRY_LEVEL', label: 'Entry level' },
+  { value: 'MID_LEVEL', label: 'Mid level' },
+  { value: 'SENIOR_LEVEL', label: 'Senior level' },
 ];
 
 const EMPTY_FORM = {
@@ -15,7 +21,8 @@ const EMPTY_FORM = {
   description: '',
   requirements: '',
   location: '',
-  job_type: 'full_time',
+  employment_type: 'FULL_TIME',
+  experience_level: 'ENTRY_LEVEL',
   salary_min: '',
   salary_max: '',
 };
@@ -37,7 +44,8 @@ export default function JobFormPage() {
           description: data.description || '',
           requirements: data.requirements || '',
           location: data.location || '',
-          job_type: data.job_type || 'full_time',
+          employment_type: data.employment_type || 'FULL_TIME',
+          experience_level: data.experience_level || 'ENTRY_LEVEL',
           salary_min: data.salary_min ?? '',
           salary_max: data.salary_max ?? '',
         });
@@ -121,27 +129,40 @@ export default function JobFormPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Job Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Employment Type</label>
               <select
-                value={form.job_type}
-                onChange={set('job_type')}
+                value={form.employment_type}
+                onChange={set('employment_type')}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
               >
-                {JOB_TYPES.map((t) => (
+                {EMPLOYMENT_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>{t.label}</option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <input
-                type="text"
-                value={form.location}
-                onChange={set('location')}
-                placeholder="e.g. Istanbul / Remote"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Experience Level</label>
+              <select
+                value={form.experience_level}
+                onChange={set('experience_level')}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              >
+                {EXPERIENCE_LEVELS.map((level) => (
+                  <option key={level.value} value={level.value}>{level.label}</option>
+                ))}
+              </select>
             </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+            <input
+              type="text"
+              value={form.location}
+              onChange={set('location')}
+              placeholder="e.g. Istanbul / Remote"
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-4">

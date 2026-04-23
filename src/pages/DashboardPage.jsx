@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { listApplications, updateApplicationStatus, withdrawApplication } from '../api/applications';
+import { listApplications } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
@@ -31,16 +31,6 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchApplications();
   }, []);
-
-  const handleWithdraw = async (id) => {
-    if (!confirm('Withdraw this application?')) return;
-    try {
-      await withdrawApplication(id);
-      fetchApplications();
-    } catch {
-      alert('Failed to withdraw application.');
-    }
-  };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -87,13 +77,13 @@ export default function DashboardPage() {
               >
                 <div className="flex-1">
                   <Link
-                    to={`/jobs/${app.job || app.job_id}`}
+                    to={`/jobs/${app.vacancy?.id || app.vacancy_id || app.job?.id || app.job_id}`}
                     className="font-semibold text-gray-900 hover:text-indigo-600 transition-colors"
                   >
-                    {app.job_title || app.job?.title || 'Job Application'}
+                    {app.vacancy_title || app.job_title || app.vacancy?.title || app.job?.title || 'Job Application'}
                   </Link>
                   <p className="text-sm text-gray-500 mt-0.5">
-                    {app.company_name || app.job?.company_name || ''}
+                    {app.vacancy_employer || app.company_name || app.employer_name || app.vacancy?.employer_name || app.job?.company_name || ''}
                   </p>
                   <p className="text-xs text-gray-400 mt-1">
                     Applied {new Date(app.created_at).toLocaleDateString()}
@@ -108,14 +98,6 @@ export default function DashboardPage() {
                   >
                     {app.status || 'Pending'}
                   </span>
-                  {app.status !== 'withdrawn' && app.status !== 'accepted' && (
-                    <button
-                      onClick={() => handleWithdraw(app.id)}
-                      className="text-xs text-red-500 hover:text-red-700 hover:underline"
-                    >
-                      Withdraw
-                    </button>
-                  )}
                 </div>
               </div>
             ))}
