@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { createJob, updateJob, getJob } from '../api/jobs';
+import { createVacancy, updateVacancy, getVacancy } from '../api/jobs';
 
 const JOB_TYPES = [
   { value: 'full_time', label: 'Full-time' },
@@ -30,7 +30,7 @@ export default function JobFormPage() {
 
   useEffect(() => {
     if (!id) return;
-    getJob(id)
+    getVacancy(id)
       .then(({ data }) => {
         setForm({
           title: data.title || '',
@@ -59,9 +59,9 @@ export default function JobFormPage() {
     };
     try {
       if (id) {
-        await updateJob(id, payload);
+        await updateVacancy(id, payload);
       } else {
-        await createJob(payload);
+        await createVacancy(payload);
       }
       navigate('/employer/jobs');
     } catch (err) {

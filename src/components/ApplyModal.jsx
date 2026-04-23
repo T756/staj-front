@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { applyToJob } from '../api/applications';
+import { listResumes } from '../api/resumes';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,9 +8,23 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [coverLetter, setCoverLetter] = useState('');
-  const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeId, setResumeId] = useState('');
+  const [resumes, setResumes] = useState([]);
+  const [resumesLoading, setResumesLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) return;
+    listResumes()
+      .then(({ data }) => {
+        const list = data.results ?? (Array.isArray(data) ? data : []);
+        setResumes(list);
+        if (list.length > 0) setResumeId(String(list[0].id));
+      })
+      .catch(() => setResumes([]))
+      .finally(() => setResumesLoading(false));
+  }, [user]);
 
   if (!user) {
     return (
@@ -39,9 +54,17 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!resumeId) {
+      setError('Please select a resume before applying.');
+      return;
+    }
     setLoading(true);
     try {
-      await applyToJob({ job: job.id, cover_letter: coverLetter, resume_url: resumeUrl });
+      await applyToJob({
+        vacancy: job.id,
+        resume: Number(resumeId),
+        cover_letter: coverLetter,
+      });
       onSuccess?.();
     } catch (err) {
       const msg = err.response?.data;
@@ -62,7 +85,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     >
       <div className="bg-white rounded-2xl p-8 max-w-lg w-full">
         <h2 className="text-xl font-bold text-gray-900 mb-1">Apply for {job.title}</h2>
-        <p className="text-gray-500 text-sm mb-6">{job.company_name || job.company}</p>
+        <p className="text-gray-500 text-sm mb-6">{job.employer_name || job.company_name || job.company}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
@@ -73,15 +96,28 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resume URL <span className="text-gray-400 font-normal">(optional)</span>
+              Resume <span className="text-red-500">*</span>
             </label>
-            <input
-              type="url"
-              value={resumeUrl}
-              onChange={(e) => setResumeUrl(e.target.value)}
-              placeholder="https://your-resume.com/resume.pdf"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            {resumesLoading ? (
+              <p className="text-sm text-gray-400">Loading resumes…</p>
+            ) : resumes.length === 0 ? (
+              <p className="text-sm text-red-600">
+                You have no saved resumes. Please create one before applying.
+              </p>
+            ) : (
+              <select
+                value={resumeId}
+                onChange={(e) => setResumeId(e.target.value)}
+                required
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+              >
+                {resumes.map((r) => (
+                  <option key={r.id} value={r.id}>
+                    {r.title || `Resume #${r.id}`}
+                  </option>
+                ))}
+              </select>
+            )}
           </div>
 
           <div>
@@ -107,7 +143,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || resumesLoading || resumes.length === 0}
               className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
             >
               {loading ? 'Submitting…' : 'Submit Application'}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getJob } from '../api/jobs';
+import { getVacancy } from '../api/jobs';
 import { useAuth } from '../context/AuthContext';
 import ApplyModal from '../components/ApplyModal';
 
@@ -15,7 +15,7 @@ export default function JobDetailPage() {
   const [applied, setApplied] = useState(false);
 
   useEffect(() => {
-    getJob(id)
+    getVacancy(id)
       .then(({ data }) => setJob(data))
       .catch(() => setError('Job not found or has been removed.'))
       .finally(() => setLoading(false));

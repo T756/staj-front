@@ -1,23 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { listJobs } from '../api/jobs';
+import { listVacancies, searchVacancies } from '../api/jobs';
 import JobCard from '../components/JobCard';
-
-const JOB_TYPES = [
-  { value: '', label: 'All Types' },
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'remote', label: 'Remote' },
-];
 
 export default function JobsPage() {
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [location, setLocation] = useState('');
+  const [salaryMin, setSalaryMin] = useState('');
+  const [salaryMax, setSalaryMax] = useState('');
   const [nextUrl, setNextUrl] = useState(null);
   const [prevUrl, setPrevUrl] = useState(null);
   const [count, setCount] = useState(0);
@@ -26,28 +17,42 @@ export default function JobsPage() {
     setLoading(true);
     setError('');
     try {
-      const { data } = await listJobs({
-        search: search || undefined,
-        job_type: jobType || undefined,
-        location: location || undefined,
-        ...params,
-      });
-      // Handle both paginated and non-paginated responses
-      if (data.results) {
-        setJobs(data.results);
-        setNextUrl(data.next);
-        setPrevUrl(data.previous);
-        setCount(data.count);
+      let data;
+      if (search) {
+        ({ data } = await searchVacancies({
+          q: search,
+          salary_min: salaryMin || undefined,
+          salary_max: salaryMax || undefined,
+          ...params,
+        }));
+        // Search returns a plain array
+        const list = Array.isArray(data) ? data : (data.results ?? []);
+        setJobs(list);
+        setCount(list.length);
+        setNextUrl(null);
+        setPrevUrl(null);
       } else {
-        setJobs(Array.isArray(data) ? data : []);
-        setCount(Array.isArray(data) ? data.length : 0);
+        ({ data } = await listVacancies({
+          salary_min: salaryMin || undefined,
+          salary_max: salaryMax || undefined,
+          ...params,
+        }));
+        if (data.results !== undefined) {
+          setJobs(data.results);
+          setNextUrl(data.next);
+          setPrevUrl(data.previous);
+          setCount(data.count);
+        } else {
+          setJobs(Array.isArray(data) ? data : []);
+          setCount(Array.isArray(data) ? data.length : 0);
+        }
       }
     } catch {
       setError('Failed to load jobs.');
     } finally {
       setLoading(false);
     }
-  }, [search, jobType, location]);
+  }, [search, salaryMin, salaryMax]);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchJobs(), 300);
@@ -64,25 +69,25 @@ export default function JobsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by title, company, keyword…"
+          placeholder="Search by title, keyword…"
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
         <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Location"
-          className="w-full sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          type="number"
+          min="0"
+          value={salaryMin}
+          onChange={(e) => setSalaryMin(e.target.value)}
+          placeholder="Min salary"
+          className="w-full sm:w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
-        <select
-          value={jobType}
-          onChange={(e) => setJobType(e.target.value)}
-          className="w-full sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
-        >
-          {JOB_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
-        </select>
+        <input
+          type="number"
+          min="0"
+          value={salaryMax}
+          onChange={(e) => setSalaryMax(e.target.value)}
+          placeholder="Max salary"
+          className="w-full sm:w-36 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        />
       </div>
 
       {/* Results */}

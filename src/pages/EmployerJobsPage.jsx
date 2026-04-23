@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { listJobs, deleteJob } from '../api/jobs';
+import { listMyVacancies, deleteVacancy, listVacancyApplicants } from '../api/jobs';
 import { useAuth } from '../context/AuthContext';
-import { listApplications } from '../api/applications';
 
 const STATUS_COLORS = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -23,7 +22,7 @@ export default function EmployerJobsPage() {
 
   const fetchJobs = () => {
     setLoading(true);
-    listJobs({ my_jobs: true })
+    listMyVacancies()
       .then(({ data }) => {
         const list = data.results ?? (Array.isArray(data) ? data : []);
         setJobs(list);
@@ -39,7 +38,7 @@ export default function EmployerJobsPage() {
   const handleDelete = async (id) => {
     if (!confirm('Delete this job listing? This cannot be undone.')) return;
     try {
-      await deleteJob(id);
+      await deleteVacancy(id);
       fetchJobs();
       if (selectedJob?.id === id) {
         setSelectedJob(null);
@@ -53,7 +52,7 @@ export default function EmployerJobsPage() {
   const viewApplications = (job) => {
     setSelectedJob(job);
     setAppsLoading(true);
-    listApplications({ job: job.id })
+    listVacancyApplicants(job.id)
       .then(({ data }) => {
         setApplications(data.results ?? (Array.isArray(data) ? data : []));
       })

@@ -6,8 +6,8 @@ export const login = (email, password) =>
   client.post('/auth/login/', { email, password });
 
 export const refreshToken = (refresh) =>
-  client.post('/auth/token/refresh/', { refresh });
+  client.post('/auth/refresh/', { refresh });
 
-export const getMe = () => client.get('/auth/me/');
+export const getMe = () => client.get('/auth/profile/');
 
-export const updateMe = (data) => client.patch('/auth/me/', data);
+export const updateMe = (data) => client.patch('/auth/profile/', data);
