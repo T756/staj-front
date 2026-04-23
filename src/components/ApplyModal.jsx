@@ -7,7 +7,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [coverLetter, setCoverLetter] = useState('');
-  const [resumeUrl, setResumeUrl] = useState('');
+  const [resumeId, setResumeId] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -39,9 +39,19 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    
+    if (!resumeId) {
+      setError('Please enter your resume ID.');
+      return;
+    }
+    
     setLoading(true);
     try {
-      await applyToJob({ job: job.id, cover_letter: coverLetter, resume_url: resumeUrl });
+      await applyToJob({ 
+        vacancy: job.id, 
+        resume: parseInt(resumeId, 10),
+        cover_letter: coverLetter || undefined
+      });
       onSuccess?.();
     } catch (err) {
       const msg = err.response?.data;
@@ -62,7 +72,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     >
       <div className="bg-white rounded-2xl p-8 max-w-lg w-full">
         <h2 className="text-xl font-bold text-gray-900 mb-1">Apply for {job.title}</h2>
-        <p className="text-gray-500 text-sm mb-6">{job.company_name || job.company}</p>
+        <p className="text-gray-500 text-sm mb-6">{job.employer_name || job.company_name || ''}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
@@ -73,15 +83,17 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resume URL <span className="text-gray-400 font-normal">(optional)</span>
+              Resume ID <span className="text-red-500">*</span>
             </label>
             <input
-              type="url"
-              value={resumeUrl}
-              onChange={(e) => setResumeUrl(e.target.value)}
-              placeholder="https://your-resume.com/resume.pdf"
+              type="number"
+              required
+              value={resumeId}
+              onChange={(e) => setResumeId(e.target.value)}
+              placeholder="Enter your resume ID"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
+            <p className="text-xs text-gray-400 mt-1">You can find your resume ID in your profile settings.</p>
           </div>
 
           <div>

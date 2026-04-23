@@ -1,11 +1,15 @@
 import client from './client';
 
-export const listJobs = (params) => client.get('/jobs/', { params });
+export const listJobs = (params) => client.get('/vacancies/', { params });
 
-export const getJob = (id) => client.get(`/jobs/${id}/`);
+export const getJob = (id) => client.get(`/vacancies/${id}/`);
 
-export const createJob = (data) => client.post('/jobs/', data);
+export const createJob = (data) => client.post('/vacancies/', data);
 
-export const updateJob = (id, data) => client.patch(`/jobs/${id}/`, data);
+export const updateJob = (id, data) => client.patch(`/vacancies/${id}/`, data);
 
-export const deleteJob = (id) => client.delete(`/jobs/${id}/`);
+export const deleteJob = (id) => client.delete(`/vacancies/${id}/`);
+
+export const listMyJobs = () => client.get('/vacancies/mine/');
+
+export const getJobApplicants = (id, params) => client.get(`/vacancies/${id}/applicants/`, { params });

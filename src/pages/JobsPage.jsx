@@ -2,13 +2,13 @@ import { useState, useEffect, useCallback } from 'react';
 import { listJobs } from '../api/jobs';
 import JobCard from '../components/JobCard';
 
-const JOB_TYPES = [
+const EMPLOYMENT_TYPES = [
   { value: '', label: 'All Types' },
-  { value: 'full_time', label: 'Full-time' },
-  { value: 'part_time', label: 'Part-time' },
-  { value: 'contract', label: 'Contract' },
-  { value: 'internship', label: 'Internship' },
-  { value: 'remote', label: 'Remote' },
+  { value: 'FULL_TIME', label: 'Full-time' },
+  { value: 'PART_TIME', label: 'Part-time' },
+  { value: 'CONTRACT', label: 'Contract' },
+  { value: 'INTERNSHIP', label: 'Internship' },
+  { value: 'REMOTE', label: 'Remote' },
 ];
 
 export default function JobsPage() {
@@ -16,8 +16,7 @@ export default function JobsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [search, setSearch] = useState('');
-  const [jobType, setJobType] = useState('');
-  const [location, setLocation] = useState('');
+  const [employmentType, setEmploymentType] = useState('');
   const [nextUrl, setNextUrl] = useState(null);
   const [prevUrl, setPrevUrl] = useState(null);
   const [count, setCount] = useState(0);
@@ -27,9 +26,7 @@ export default function JobsPage() {
     setError('');
     try {
       const { data } = await listJobs({
-        search: search || undefined,
-        job_type: jobType || undefined,
-        location: location || undefined,
+        status: 'OPEN',
         ...params,
       });
       // Handle both paginated and non-paginated responses
@@ -47,7 +44,7 @@ export default function JobsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, jobType, location]);
+  }, []);
 
   useEffect(() => {
     const timer = setTimeout(() => fetchJobs(), 300);
@@ -64,25 +61,24 @@ export default function JobsPage() {
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search by title, company, keyword…"
+          placeholder="Search by title, company, keyword..."
           className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Location"
-          className="w-full sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-        />
         <select
-          value={jobType}
-          onChange={(e) => setJobType(e.target.value)}
+          value={employmentType}
+          onChange={(e) => setEmploymentType(e.target.value)}
           className="w-full sm:w-40 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
         >
-          {JOB_TYPES.map((t) => (
+          {EMPLOYMENT_TYPES.map((t) => (
             <option key={t.value} value={t.value}>{t.label}</option>
           ))}
         </select>
+        <button
+          onClick={() => fetchJobs()}
+          className="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          Search
+        </button>
       </div>
 
       {/* Results */}

@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { listJobs, deleteJob } from '../api/jobs';
+import { listMyJobs, deleteJob, getJobApplicants } from '../api/jobs';
 import { useAuth } from '../context/AuthContext';
-import { listApplications } from '../api/applications';
 
 const STATUS_COLORS = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -23,7 +22,7 @@ export default function EmployerJobsPage() {
 
   const fetchJobs = () => {
     setLoading(true);
-    listJobs({ my_jobs: true })
+    listMyJobs()
       .then(({ data }) => {
         const list = data.results ?? (Array.isArray(data) ? data : []);
         setJobs(list);
@@ -53,7 +52,7 @@ export default function EmployerJobsPage() {
   const viewApplications = (job) => {
     setSelectedJob(job);
     setAppsLoading(true);
-    listApplications({ job: job.id })
+    getJobApplicants(job.id)
       .then(({ data }) => {
         setApplications(data.results ?? (Array.isArray(data) ? data : []));
       })
@@ -110,7 +109,7 @@ export default function EmployerJobsPage() {
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold text-gray-900 text-sm truncate">{job.title}</h3>
                       <p className="text-xs text-gray-400 mt-0.5">
-                        {job.location || 'No location'} · {job.job_type?.replace('_', ' ')}
+                        {job.location || 'No location'} · {job.employment_type?.replace('_', ' ')}
                       </p>
                     </div>
                     <div className="flex gap-2 shrink-0">
