@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listMyJobs, deleteJob, getJobApplicants } from '../api/jobs';
 import { updateApplicationStatus, createInterview } from '../api/applications';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import { getDisplayName } from '../utils/user';
 
 const STATUS_COLORS = {
@@ -26,7 +26,7 @@ export default function EmployerJobsPage() {
   const [appsLoading, setAppsLoading] = useState(false);
   const [statusLoadingId, setStatusLoadingId] = useState(null);
 
-  const fetchJobs = () => {
+  const fetchJobs = useCallback(() => {
     setLoading(true);
     listMyJobs()
       .then(({ data }) => {
@@ -35,11 +35,11 @@ export default function EmployerJobsPage() {
       })
       .catch(() => setError('Failed to load job listings.'))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    queueMicrotask(fetchJobs);
+  }, [fetchJobs]);
 
   const handleDelete = async (id) => {
     if (!confirm('Delete this job listing? This cannot be undone.')) return;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getMe, updateMe } from '../api/auth';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import {
   listResumes,
   createResume,
@@ -53,7 +53,7 @@ export default function ProfilePage() {
         if (!mounted) return;
         setProfile(extractProfile(meData));
         setResumes(resumesData.results ?? (Array.isArray(resumesData) ? resumesData : []));
-      } catch (err) {
+      } catch {
         setError('Failed to load profile.');
       } finally {
         if (mounted) setLoading(false);
@@ -68,12 +68,13 @@ export default function ProfilePage() {
     setError('');
     setSaving(true);
     try {
-      const payload = { ...profile };
+      const payload = { ...(profile || {}) };
+      delete payload.avatar;
       await updateMe(payload);
       // refresh page data
       const { data } = await getMe();
       setProfile(extractProfile(data));
-    } catch (err) {
+    } catch {
       setError('Failed to update profile.');
     } finally {
       setSaving(false);

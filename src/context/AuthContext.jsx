@@ -1,9 +1,8 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { login as apiLogin, register as apiRegister, getMe, updateMe } from '../api/auth';
 import { listMyJobs } from '../api/jobs';
 import { listApplications } from '../api/applications';
-
-const AuthContext = createContext(null);
+import { AuthContext } from './AuthContextValue';
 
 const parseJwtPayload = (token) => {
   try {
@@ -93,7 +92,7 @@ const normalizeUser = (data) => {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => Boolean(localStorage.getItem('access_token')));
 
   const fetchMe = useCallback(async () => {
     try {
@@ -123,9 +122,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (localStorage.getItem('access_token')) {
-      fetchMe();
-    } else {
-      setLoading(false);
+      queueMicrotask(fetchMe);
     }
   }, [fetchMe]);
 
@@ -144,8 +141,6 @@ export function AuthProvider({ children }) {
     const payload = {
       email: formData.email,
       password: formData.password,
-      first_name: formData.first_name,
-      last_name: formData.last_name,
       role: formData.role || (formData.is_employer ? 'EMPLOYER' : 'JOB_SEEKER'),
     };
 
@@ -177,8 +172,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

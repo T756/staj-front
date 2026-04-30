@@ -1,8 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getJob } from '../api/jobs';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import ApplyModal from '../components/ApplyModal';
+
+const formatDate = (value) => {
+  if (!value) return '';
+  const timestamp = typeof value === 'number' && value < 1e12 ? value * 1000 : value;
+  return new Date(timestamp).toLocaleDateString();
+};
 
 export default function JobDetailPage() {
   const { id } = useParams();
@@ -43,7 +49,14 @@ export default function JobDetailPage() {
     );
   }
 
-  const isOwner = user && (user.id === job.created_by || user.is_staff);
+  const userEmail = user?.email?.toLowerCase();
+  const employerEmail = typeof job.employer === 'string' ? job.employer.toLowerCase() : '';
+  const isOwner = Boolean(
+    user?.is_staff ||
+    (user?.id != null && job.created_by != null && user.id === job.created_by) ||
+    (userEmail && employerEmail && userEmail === employerEmail)
+  );
+  const postedDate = formatDate(job.created_at);
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
@@ -59,7 +72,7 @@ export default function JobDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
-            <p className="text-gray-500 mt-1 text-lg">{job.employer_name || job.company_name || job.company}</p>
+            <p className="text-gray-500 mt-1 text-lg">{job.employer_name || job.company_name || job.company || job.employer}</p>
           </div>
           {!isOwner && (
             applied ? (
@@ -89,14 +102,12 @@ export default function JobDetailPage() {
               {job.employment_type.toLowerCase().replace(/_/g, ' ')}
             </span>
           )}
-          {job.salary_min && job.salary_max && (
+          {job.salary_min != null && job.salary_max != null && (
             <span className="flex items-center gap-1.5 text-gray-500">
               💰 ${Number(job.salary_min).toLocaleString()} – ${Number(job.salary_max).toLocaleString()}
             </span>
           )}
-          <span className="text-gray-400">
-            Posted {new Date(job.created_at).toLocaleDateString()}
-          </span>
+          {postedDate && <span className="text-gray-400">Posted {postedDate}</span>}
         </div>
 
         <hr className="border-gray-100 mb-8" />

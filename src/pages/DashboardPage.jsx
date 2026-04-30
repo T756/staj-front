@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { listApplications } from '../api/applications';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import { Link } from 'react-router-dom';
 import { getDisplayName, isEmployer } from '../utils/user';
 
@@ -21,7 +21,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const fetchApplications = () => {
+  const fetchApplications = useCallback(() => {
     setLoading(true);
     listApplications()
       .then(({ data }) => {
@@ -30,18 +30,15 @@ export default function DashboardPage() {
       })
       .catch(() => setError('Failed to load applications.'))
       .finally(() => setLoading(false));
-  };
+  }, []);
 
   useEffect(() => {
     if (employer) {
-      // Employers don't have "my applications" — skip fetching and show employer actions
-      setApplications([]);
-      setLoading(false);
       return;
     }
 
-    fetchApplications();
-  }, [employer]);
+    queueMicrotask(fetchApplications);
+  }, [employer, fetchApplications]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">

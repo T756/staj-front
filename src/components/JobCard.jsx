@@ -8,9 +8,16 @@ const TYPE_COLORS = {
   REMOTE: 'bg-teal-100 text-teal-800',
 };
 
+const formatDate = (value) => {
+  if (!value) return '';
+  const timestamp = typeof value === 'number' && value < 1e12 ? value * 1000 : value;
+  return new Date(timestamp).toLocaleDateString();
+};
+
 export default function JobCard({ job }) {
-  const typeLabel = job.employment_type?.toLowerCase().replace(/_/g, ' ') || 'full time';
+  const typeLabel = job.employment_type?.toLowerCase().replace(/_/g, ' ');
   const colorClass = TYPE_COLORS[job.employment_type] || 'bg-gray-100 text-gray-700';
+  const postedDate = formatDate(job.created_at);
 
   return (
     <Link
@@ -22,19 +29,21 @@ export default function JobCard({ job }) {
           <h3 className="font-semibold text-gray-900 text-lg truncate">
             {job.title}
           </h3>
-          <p className="text-gray-500 text-sm mt-0.5">{job.employer_name || job.company_name || job.company}</p>
+          <p className="text-gray-500 text-sm mt-0.5">{job.employer_name || job.company_name || job.company || job.employer}</p>
           {job.location && (
             <p className="text-gray-400 text-sm mt-1">📍 {job.location}</p>
           )}
         </div>
-        <span
-          className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full capitalize ${colorClass}`}
-        >
-          {typeLabel}
-        </span>
+        {typeLabel && (
+          <span
+            className={`shrink-0 text-xs font-medium px-2.5 py-1 rounded-full capitalize ${colorClass}`}
+          >
+            {typeLabel}
+          </span>
+        )}
       </div>
 
-      {job.salary_min && job.salary_max && (
+      {job.salary_min != null && job.salary_max != null && (
         <p className="text-indigo-600 text-sm font-medium mt-3">
           ${Number(job.salary_min).toLocaleString()} – ${Number(job.salary_max).toLocaleString()}
         </p>
@@ -44,9 +53,11 @@ export default function JobCard({ job }) {
         {job.description}
       </p>
 
-      <div className="mt-4 text-xs text-gray-400">
-        Posted {new Date(job.created_at).toLocaleDateString()}
-      </div>
+      {postedDate && (
+        <div className="mt-4 text-xs text-gray-400">
+          Posted {postedDate}
+        </div>
+      )}
     </Link>
   );
 }

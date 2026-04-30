@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   listCompanies,
   createCompany,
@@ -10,7 +10,7 @@ import {
   listCompanyReviews,
   reviewCompany,
 } from '../api/companies';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import { isEmployer, isJobSeeker } from '../utils/user';
 
 const EMPTY_COMPANY_FORM = {
@@ -50,7 +50,7 @@ export default function CompaniesPage() {
     return map;
   }, [followers]);
 
-  const loadAll = async () => {
+  const loadAll = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -67,11 +67,11 @@ export default function CompaniesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadAll();
-  }, []);
+    queueMicrotask(loadAll);
+  }, [loadAll]);
 
   const handleCompanySubmit = async (e) => {
     e.preventDefault();

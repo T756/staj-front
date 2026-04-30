@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { applyToJob } from '../api/applications';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import { useNavigate } from 'react-router-dom';
 import { listResumes } from '../api/resumes';
 
@@ -12,6 +12,27 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!user) {
+      return undefined;
+    }
+
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { data } = await listResumes();
+        const list = data.results ?? (Array.isArray(data) ? data : []);
+        if (!mounted) return;
+        setResumes(list);
+        setResumeId((current) => current || (list[0]?.id ? String(list[0].id) : ''));
+      } catch {
+        // ignore - user can create a resume from profile
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, [user]);
 
   if (!user) {
     return (
@@ -61,23 +82,6 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     }
   };
 
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const { data } = await listResumes();
-        const list = data.results ?? (Array.isArray(data) ? data : []);
-        if (!mounted) return;
-        setResumes(list);
-        if (!resumeId && list.length > 0) setResumeId(String(list[0].id));
-      } catch {
-        // ignore — user can enter resume id manually
-      }
-    };
-    load();
-    return () => { mounted = false; };
-  }, []);
-
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -85,7 +89,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     >
       <div className="bg-white rounded-2xl p-8 max-w-lg w-full">
         <h2 className="text-xl font-bold text-gray-900 mb-1">Apply for {job.title}</h2>
-        <p className="text-gray-500 text-sm mb-6">{job.employer_name || job.company_name || job.company}</p>
+        <p className="text-gray-500 text-sm mb-6">{job.employer_name || job.company_name || job.company || job.employer}</p>
 
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">

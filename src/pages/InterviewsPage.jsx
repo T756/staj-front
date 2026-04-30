@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { listInterviews, createInterview, listApplications } from '../api/applications';
 
 export default function InterviewsPage() {
@@ -15,7 +15,7 @@ export default function InterviewsPage() {
     notes: '',
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -26,9 +26,7 @@ export default function InterviewsPage() {
         const { data: appsData } = await listApplications();
         const appList = appsData.results ?? (Array.isArray(appsData) ? appsData : []);
         setApplications(appList);
-        if (!form.application && appList.length > 0) {
-          setForm((f) => ({ ...f, application: String(appList[0].id) }));
-        }
+        setForm((f) => (f.application || appList.length === 0 ? f : { ...f, application: String(appList[0].id) }));
       } catch {
         // Some roles may not have /applications/me/. Keep manual application ID input available.
       }
@@ -37,11 +35,11 @@ export default function InterviewsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    queueMicrotask(loadData);
+  }, [loadData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

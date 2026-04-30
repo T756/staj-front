@@ -59,6 +59,11 @@ export default function JobFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (form.salary_min === '' || form.salary_max === '') {
+      setError('Salary range is required.');
+      return;
+    }
+
     setLoading(true);
     const payload = {
       title: form.title,
@@ -66,8 +71,8 @@ export default function JobFormPage() {
       employment_type: form.employment_type,
       experience_level: form.experience_level,
       status: form.status,
-      salary_min: form.salary_min === '' ? null : Number(form.salary_min),
-      salary_max: form.salary_max === '' ? null : Number(form.salary_max),
+      salary_min: Number(form.salary_min),
+      salary_max: Number(form.salary_max),
     };
     try {
       if (id) {
@@ -175,6 +180,7 @@ export default function JobFormPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Min Salary ($)</label>
               <input
                 type="number"
+                required
                 min="0"
                 value={form.salary_min}
                 onChange={set('salary_min')}
@@ -186,6 +192,7 @@ export default function JobFormPage() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Max Salary ($)</label>
               <input
                 type="number"
+                required
                 min="0"
                 value={form.salary_max}
                 onChange={set('salary_max')}

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { listMessages, sendMessage, listApplications } from '../api/applications';
 import { listMyJobs, getJobApplicants } from '../api/jobs';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContextValue';
 import { isEmployer } from '../utils/user';
 
 export default function MessagesPage() {
@@ -19,7 +19,7 @@ export default function MessagesPage() {
     content: '',
   });
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -42,19 +42,17 @@ export default function MessagesPage() {
       }
 
       setApplications(appList);
-      if (!form.application && appList.length > 0) {
-        setForm((f) => ({ ...f, application: String(appList[0].id) }));
-      }
+      setForm((f) => (f.application || appList.length === 0 ? f : { ...f, application: String(appList[0].id) }));
     } catch {
       setError('Failed to load messages.');
     } finally {
       setLoading(false);
     }
-  };
+  }, [employer]);
 
   useEffect(() => {
-    loadData();
-  }, [employer]);
+    queueMicrotask(loadData);
+  }, [loadData]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
