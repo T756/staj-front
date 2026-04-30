@@ -147,9 +147,9 @@ export default function CompaniesPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Companies</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Company Profiles</h1>
         <p className="text-gray-500 mt-1">
-          Browse companies, manage company profile as employer, and review/follow as job seeker.
+          Employers can create multiple company profiles. Job seekers do not use this section from the menu.
         </p>
       </div>
 
@@ -158,7 +158,7 @@ export default function CompaniesPage() {
       {employer && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
-            {editingCompanyId ? 'Edit Company Profile' : 'Create Company Profile'}
+            {editingCompanyId ? 'Edit Company Profile' : 'Create Another Company'}
           </h2>
           <form onSubmit={handleCompanySubmit} className="space-y-4">
             <div className="grid sm:grid-cols-2 gap-4">

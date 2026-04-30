@@ -56,12 +56,14 @@ export default function Navbar() {
                   Interviews
                 </Link>
               )}
-              <Link
-                to="/companies"
-                className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-              >
-                Companies
-              </Link>
+              {employer && (
+                <Link
+                  to="/companies"
+                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Companies
+                </Link>
+              )}
               <Link
                 to="/dashboard"
                 className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
