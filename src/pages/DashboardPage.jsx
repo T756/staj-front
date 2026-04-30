@@ -66,7 +66,7 @@ export default function DashboardPage() {
         </h2>
 
         {employer ? (
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-4 gap-4">
             <div className="p-6 border rounded-xl bg-indigo-50">
               <h3 className="font-semibold text-gray-900">Manage Job Listings</h3>
               <p className="text-sm text-gray-500 mt-2">View applicants and edit your posted jobs.</p>
@@ -102,6 +102,19 @@ export default function DashboardPage() {
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
                 >
                   Manage Interviews
+                </Link>
+              </div>
+            </div>
+
+            <div className="p-6 border rounded-xl">
+              <h3 className="font-semibold text-gray-900">Applicant Messages</h3>
+              <p className="text-sm text-gray-500 mt-2">Chat with candidates from your vacancy applications.</p>
+              <div className="mt-4">
+                <Link
+                  to="/applications/messages"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
+                >
+                  Open Messages
                 </Link>
               </div>
             </div>

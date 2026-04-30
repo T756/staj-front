@@ -7,7 +7,7 @@ import {
   updateResume,
   deleteResume,
 } from '../api/resumes';
-import { getDisplayName } from '../utils/user';
+import { getDisplayName, isJobSeeker } from '../utils/user';
 
 const emptyResume = {
   title: '',
@@ -18,6 +18,7 @@ const emptyResume = {
 
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
+  const jobSeeker = isJobSeeker(user);
   const [profile, setProfile] = useState(null);
   const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,10 +34,9 @@ export default function ProfilePage() {
     const load = async () => {
       setLoading(true);
       try {
-        const [{ data: meData }, { data: resumesData }] = await Promise.all([
-          getMe(),
-          listResumes(),
-        ]);
+        const mePromise = getMe();
+        const resumesPromise = jobSeeker ? listResumes() : Promise.resolve({ data: [] });
+        const [{ data: meData }, { data: resumesData }] = await Promise.all([mePromise, resumesPromise]);
         if (!mounted) return;
         setProfile(meData.profile ?? {});
         setResumes(resumesData.results ?? (Array.isArray(resumesData) ? resumesData : []));
@@ -48,7 +48,7 @@ export default function ProfilePage() {
     };
     load();
     return () => { mounted = false; };
-  }, []);
+  }, [jobSeeker]);
 
   const handleSave = async (e) => {
     e.preventDefault();
@@ -88,7 +88,9 @@ export default function ProfilePage() {
       } else {
         await createResume(payload);
       }
-      await refreshResumes();
+      if (jobSeeker) {
+        await refreshResumes();
+      }
       setResumeForm(emptyResume);
       setEditingResumeId(null);
     } catch (err) {
@@ -117,7 +119,9 @@ export default function ProfilePage() {
     if (!confirm('Delete this resume?')) return;
     try {
       await deleteResume(resumeId);
-      await refreshResumes();
+      if (jobSeeker) {
+        await refreshResumes();
+      }
       if (editingResumeId === resumeId) {
         setEditingResumeId(null);
         setResumeForm(emptyResume);
@@ -209,7 +213,8 @@ export default function ProfilePage() {
           </form>
         </div>
 
-        <div className="space-y-6">
+        {jobSeeker && (
+          <div className="space-y-6">
           <div className="bg-white rounded-2xl border border-gray-200 p-6">
             <div className="mb-5 flex items-center justify-between gap-3">
               <div>
@@ -330,7 +335,8 @@ export default function ProfilePage() {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );

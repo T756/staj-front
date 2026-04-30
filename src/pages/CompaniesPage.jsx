@@ -11,7 +11,7 @@ import {
   reviewCompany,
 } from '../api/companies';
 import { useAuth } from '../context/AuthContext';
-import { isEmployer } from '../utils/user';
+import { isEmployer, isJobSeeker } from '../utils/user';
 
 const EMPTY_COMPANY_FORM = {
   name: '',
@@ -26,6 +26,7 @@ const EMPTY_COMPANY_FORM = {
 export default function CompaniesPage() {
   const { user } = useAuth();
   const employer = isEmployer(user);
+  const jobSeeker = isJobSeeker(user);
 
   const [companies, setCompanies] = useState([]);
   const [followers, setFollowers] = useState([]);
@@ -147,7 +148,9 @@ export default function CompaniesPage() {
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Companies</h1>
-        <p className="text-gray-500 mt-1">Browse companies, follow them, and leave reviews.</p>
+        <p className="text-gray-500 mt-1">
+          Browse companies, manage company profile as employer, and review/follow as job seeker.
+        </p>
       </div>
 
       {error && <div className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-700">{error}</div>}
@@ -246,10 +249,11 @@ export default function CompaniesPage() {
                     </div>
                     <button
                       type="button"
+                      disabled={!jobSeeker}
                       onClick={() => handleToggleFollow(c.id)}
-                      className="text-xs px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50"
+                      className="text-xs px-3 py-1.5 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {followedByCompanyId.has(c.id) ? 'Unfollow' : 'Follow'}
+                      {!jobSeeker ? 'Job seeker only' : followedByCompanyId.has(c.id) ? 'Unfollow' : 'Follow'}
                     </button>
                   </div>
 
@@ -289,6 +293,7 @@ export default function CompaniesPage() {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray-200 p-6 space-y-6">
+          {jobSeeker && (
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Write Review</h2>
             <form onSubmit={handleReviewSubmit} className="space-y-3">
@@ -329,6 +334,7 @@ export default function CompaniesPage() {
               </button>
             </form>
           </div>
+          )}
 
           <div>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Recent Reviews</h2>

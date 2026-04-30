@@ -11,12 +11,14 @@ export function getDisplayName(user) {
 
 export function isEmployer(user) {
   if (!user) return false;
+  if (user.role === 'EMPLOYER') return true;
   if (typeof user.is_employer === 'boolean') return user.is_employer;
-  return user.role === 'EMPLOYER';
+  return false;
 }
 
 export function isJobSeeker(user) {
   if (!user) return false;
+  if (user.role === 'JOB_SEEKER') return true;
   if (typeof user.is_employer === 'boolean') return !user.is_employer;
-  return user.role === 'JOB_SEEKER';
+  return false;
 }

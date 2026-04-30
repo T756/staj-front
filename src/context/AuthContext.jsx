@@ -1,14 +1,93 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { login as apiLogin, register as apiRegister, getMe, updateMe } from '../api/auth';
+import { listMyJobs } from '../api/jobs';
+import { listApplications } from '../api/applications';
 
 const AuthContext = createContext(null);
 
+const parseJwtPayload = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const json = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => `%${`00${c.charCodeAt(0).toString(16)}`.slice(-2)}`)
+        .join('')
+    );
+    return JSON.parse(json);
+  } catch {
+    return null;
+  }
+};
+
+const getRoleHintFromToken = () => {
+  const access = localStorage.getItem('access_token');
+  if (!access) return null;
+  const payload = parseJwtPayload(access);
+  if (!payload) return null;
+  return payload.role || payload.user_role || null;
+};
+
+const detectProfileOnlyResponse = (data) => {
+  if (!data || typeof data !== 'object') return false;
+  const hasProfileFields = 'first_name' in data || 'last_name' in data || 'phone' in data || 'city' in data;
+  return hasProfileFields && !('profile' in data) && !('email' in data) && !('role' in data);
+};
+
+const inferRoleHeuristically = async () => {
+  try {
+    await listMyJobs();
+    return 'EMPLOYER';
+  } catch {
+    // not employer or endpoint not allowed
+  }
+
+  try {
+    await listApplications();
+    return 'JOB_SEEKER';
+  } catch {
+    // unresolved
+  }
+
+  return null;
+};
+
 const normalizeUser = (data) => {
   if (!data) return null;
-  if (typeof data.is_employer === 'boolean') return data;
+
+  if (detectProfileOnlyResponse(data)) {
+    const roleHint = getRoleHintFromToken() || localStorage.getItem('role_hint') || null;
+    return {
+      profile: data,
+      role: roleHint,
+      email: localStorage.getItem('email_hint') || '',
+      is_employer: roleHint === 'EMPLOYER',
+    };
+  }
+
+  if (typeof data.is_employer === 'boolean') {
+    return {
+      ...data,
+      role: data.role || (data.is_employer ? 'EMPLOYER' : 'JOB_SEEKER'),
+      profile: data.profile || {
+        first_name: data.first_name || '',
+        last_name: data.last_name || '',
+      },
+    };
+  }
+
+  const role = data.role || getRoleHintFromToken() || localStorage.getItem('role_hint') || null;
+
   return {
     ...data,
-    is_employer: data.role === 'EMPLOYER',
+    role,
+    is_employer: role === 'EMPLOYER',
+    profile: data.profile || {
+      first_name: data.first_name || '',
+      last_name: data.last_name || '',
+    },
   };
 };
 
@@ -19,7 +98,24 @@ export function AuthProvider({ children }) {
   const fetchMe = useCallback(async () => {
     try {
       const { data } = await getMe();
-      setUser(normalizeUser(data));
+      const normalized = normalizeUser(data);
+
+      if (!normalized?.role) {
+        const inferredRole = await inferRoleHeuristically();
+        setUser({
+          ...normalized,
+          role: inferredRole,
+          is_employer: inferredRole === 'EMPLOYER',
+        });
+        if (inferredRole) localStorage.setItem('role_hint', inferredRole);
+      } else {
+        setUser(normalized);
+        localStorage.setItem('role_hint', normalized.role);
+      }
+
+      if (normalized?.email) {
+        localStorage.setItem('email_hint', normalized.email);
+      }
     } catch {
       setUser(null);
     } finally {
@@ -39,6 +135,13 @@ export function AuthProvider({ children }) {
     const { data } = await apiLogin(email, password);
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
+    localStorage.setItem('email_hint', email);
+
+    const roleFromToken = getRoleHintFromToken();
+    if (roleFromToken) {
+      localStorage.setItem('role_hint', roleFromToken);
+    }
+
     await fetchMe();
   };
 
@@ -70,6 +173,8 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
+    localStorage.removeItem('role_hint');
+    localStorage.removeItem('email_hint');
     setUser(null);
   };
 

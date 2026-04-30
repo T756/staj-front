@@ -1,7 +1,13 @@
 import { useEffect, useState } from 'react';
 import { listMessages, sendMessage, listApplications } from '../api/applications';
+import { listMyJobs, getJobApplicants } from '../api/jobs';
+import { useAuth } from '../context/AuthContext';
+import { isEmployer } from '../utils/user';
 
 export default function MessagesPage() {
+  const { user } = useAuth();
+  const employer = isEmployer(user);
+
   const [messages, setMessages] = useState([]);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,12 +23,22 @@ export default function MessagesPage() {
     setLoading(true);
     setError('');
     try {
-      const [{ data: messagesData }, { data: appsData }] = await Promise.all([
-        listMessages(),
-        listApplications(),
-      ]);
+      const { data: messagesData } = await listMessages();
       setMessages(messagesData.results ?? (Array.isArray(messagesData) ? messagesData : []));
-      const appList = appsData.results ?? (Array.isArray(appsData) ? appsData : []);
+
+      let appList = [];
+      if (employer) {
+        const { data: jobsData } = await listMyJobs();
+        const jobs = jobsData.results ?? (Array.isArray(jobsData) ? jobsData : []);
+        const appResponses = await Promise.all(
+          jobs.map((job) => getJobApplicants(job.id).catch(() => ({ data: [] })))
+        );
+        appList = appResponses.flatMap((res) => res.data.results ?? (Array.isArray(res.data) ? res.data : []));
+      } else {
+        const { data: appsData } = await listApplications();
+        appList = appsData.results ?? (Array.isArray(appsData) ? appsData : []);
+      }
+
       setApplications(appList);
       if (!form.application && appList.length > 0) {
         setForm((f) => ({ ...f, application: String(appList[0].id) }));
@@ -36,7 +52,7 @@ export default function MessagesPage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [employer]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -81,6 +97,11 @@ export default function MessagesPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Send Message</h2>
+        {employer && (
+          <p className="text-sm text-gray-500 mb-4">
+            As an employer, you can message applicants from your vacancy applications.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Application</label>

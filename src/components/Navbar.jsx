@@ -42,14 +42,12 @@ export default function Navbar() {
                   Post Job
                 </Link>
               )}
-              {!employer && (
-                <Link
-                  to="/applications/messages"
-                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
-                >
-                  Messages
-                </Link>
-              )}
+              <Link
+                to="/applications/messages"
+                className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+              >
+                Messages
+              </Link>
               {employer && (
                 <Link
                   to="/applications/interviews"
