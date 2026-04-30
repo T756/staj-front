@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { isEmployer } from '../utils/user';
 
 export default function ProtectedRoute({ children, requireEmployer = false }) {
   const { user, loading } = useAuth();
@@ -16,7 +17,7 @@ export default function ProtectedRoute({ children, requireEmployer = false }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (requireEmployer && !user.is_employer) {
+  if (requireEmployer && !isEmployer(user)) {
     return <Navigate to="/dashboard" replace />;
   }
 

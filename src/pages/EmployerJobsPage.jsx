@@ -1,14 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { listMyJobs, deleteJob, getJobApplicants } from '../api/jobs';
+import { updateApplicationStatus, createInterview } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { getDisplayName } from '../utils/user';
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  reviewing: 'bg-blue-100 text-blue-800',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  VIEWED: 'bg-blue-100 text-blue-800',
+  INTERVIEW: 'bg-purple-100 text-purple-800',
+  OFFER: 'bg-teal-100 text-teal-800',
+  ACCEPTED: 'bg-green-100 text-green-800',
+  REJECTED: 'bg-red-100 text-red-800',
+  WITHDRAWN: 'bg-gray-100 text-gray-500',
 };
 
 export default function EmployerJobsPage() {
@@ -20,6 +24,7 @@ export default function EmployerJobsPage() {
   const [selectedJob, setSelectedJob] = useState(null);
   const [applications, setApplications] = useState([]);
   const [appsLoading, setAppsLoading] = useState(false);
+  const [statusLoadingId, setStatusLoadingId] = useState(null);
 
   const fetchJobs = () => {
     setLoading(true);
@@ -59,6 +64,44 @@ export default function EmployerJobsPage() {
       })
       .catch(() => setApplications([]))
       .finally(() => setAppsLoading(false));
+  };
+
+  const refreshSelectedApplications = () => {
+    if (!selectedJob) return;
+    viewApplications(selectedJob);
+  };
+
+  const handleStatusUpdate = async (applicationId, status) => {
+    setStatusLoadingId(applicationId);
+    try {
+      await updateApplicationStatus(applicationId, status);
+      refreshSelectedApplications();
+    } catch {
+      alert('Failed to update application status.');
+    } finally {
+      setStatusLoadingId(null);
+    }
+  };
+
+  const handleScheduleInterview = async (applicationId) => {
+    const when = prompt('Interview datetime (ISO), e.g. 2026-05-05T10:00:00Z');
+    if (!when) return;
+    const location = prompt('Location or video link') || '';
+
+    setStatusLoadingId(applicationId);
+    try {
+      await createInterview({
+        application: applicationId,
+        scheduled_at: when,
+        location,
+      });
+      await updateApplicationStatus(applicationId, 'INTERVIEW');
+      refreshSelectedApplications();
+    } catch {
+      alert('Failed to schedule interview. Check datetime format.');
+    } finally {
+      setStatusLoadingId(null);
+    }
   };
 
   return (
@@ -160,12 +203,17 @@ export default function EmployerJobsPage() {
                       <p className="font-medium text-gray-900 text-sm">
                         {app.applicant_name || app.applicant?.email || `Applicant #${app.id}`}
                       </p>
+                      {(app.applicant?.profile?.first_name || app.applicant?.profile?.last_name) && (
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {(app.applicant.profile.first_name || '').trim()} {(app.applicant.profile.last_name || '').trim()}
+                        </p>
+                      )}
                       <p className="text-xs text-gray-400 mt-0.5">
                         Applied {new Date(app.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <span
-                      className={`text-xs font-medium px-2.5 py-1 rounded-full capitalize ${
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full ${
                         STATUS_COLORS[app.status] || 'bg-gray-100 text-gray-600'
                       }`}
                     >
@@ -188,6 +236,41 @@ export default function EmployerJobsPage() {
                   {!app.resume_url && app.resume && (
                     <p className="mt-2 text-xs text-gray-400">Resume ID: {app.resume}</p>
                   )}
+
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={statusLoadingId === app.id}
+                      onClick={() => handleStatusUpdate(app.id, 'VIEWED')}
+                      className="text-xs px-2.5 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Mark Viewed
+                    </button>
+                    <button
+                      type="button"
+                      disabled={statusLoadingId === app.id}
+                      onClick={() => handleScheduleInterview(app.id)}
+                      className="text-xs px-2.5 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      Schedule Interview
+                    </button>
+                    <button
+                      type="button"
+                      disabled={statusLoadingId === app.id}
+                      onClick={() => handleStatusUpdate(app.id, 'ACCEPTED')}
+                      className="text-xs px-2.5 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                    >
+                      Accept
+                    </button>
+                    <button
+                      type="button"
+                      disabled={statusLoadingId === app.id}
+                      onClick={() => handleStatusUpdate(app.id, 'REJECTED')}
+                      className="text-xs px-2.5 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+                    >
+                      Reject
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>

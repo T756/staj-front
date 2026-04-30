@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { getJob } from '../api/jobs';
 import { useAuth } from '../context/AuthContext';
 import ApplyModal from '../components/ApplyModal';
+import { isEmployer } from '../utils/user';
 
 export default function JobDetailPage() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ export default function JobDetailPage() {
   const [error, setError] = useState('');
   const [showApply, setShowApply] = useState(false);
   const [applied, setApplied] = useState(false);
+  const employer = isEmployer(user);
 
   useEffect(() => {
     getJob(id)
@@ -61,7 +63,7 @@ export default function JobDetailPage() {
             <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
             <p className="text-gray-500 mt-1 text-lg">{job.employer_name || job.company_name || job.company}</p>
           </div>
-          {!isOwner && (
+          {!isOwner && !employer && (
             applied ? (
               <span className="shrink-0 px-5 py-2.5 bg-green-100 text-green-700 font-medium rounded-xl text-sm">
                 ✓ Applied
@@ -119,7 +121,7 @@ export default function JobDetailPage() {
         )}
 
         {/* Apply CTA */}
-        {!isOwner && !applied && (
+        {!isOwner && !employer && !applied && (
           <div className="mt-10 pt-8 border-t border-gray-100 text-center">
             <button
               onClick={() => setShowApply(true)}

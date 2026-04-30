@@ -11,18 +11,19 @@ const EMPLOYMENT_TYPES = [
 ];
 
 const EXPERIENCE_LEVELS = [
-  { value: 'ENTRY_LEVEL', label: 'Entry level' },
+  { value: 'NO_EXPERIENCE', label: 'No experience' },
+  { value: 'JUNIOR', label: 'Junior' },
   { value: 'MID_LEVEL', label: 'Mid level' },
-  { value: 'SENIOR_LEVEL', label: 'Senior level' },
+  { value: 'SENIOR', label: 'Senior' },
+  { value: 'LEAD', label: 'Lead / Manager' },
 ];
 
 const EMPTY_FORM = {
   title: '',
   description: '',
-  requirements: '',
-  location: '',
   employment_type: 'FULL_TIME',
-  experience_level: 'ENTRY_LEVEL',
+  experience_level: 'NO_EXPERIENCE',
+  status: 'OPEN',
   salary_min: '',
   salary_max: '',
 };
@@ -42,10 +43,9 @@ export default function JobFormPage() {
         setForm({
           title: data.title || '',
           description: data.description || '',
-          requirements: data.requirements || '',
-          location: data.location || '',
           employment_type: data.employment_type || 'FULL_TIME',
-          experience_level: data.experience_level || 'ENTRY_LEVEL',
+          experience_level: data.experience_level || 'NO_EXPERIENCE',
+          status: data.status || 'OPEN',
           salary_min: data.salary_min ?? '',
           salary_max: data.salary_max ?? '',
         });
@@ -61,7 +61,11 @@ export default function JobFormPage() {
     setError('');
     setLoading(true);
     const payload = {
-      ...form,
+      title: form.title,
+      description: form.description,
+      employment_type: form.employment_type,
+      experience_level: form.experience_level,
+      status: form.status,
       salary_min: form.salary_min === '' ? null : Number(form.salary_min),
       salary_max: form.salary_max === '' ? null : Number(form.salary_max),
     };
@@ -155,14 +159,15 @@ export default function JobFormPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-            <input
-              type="text"
-              value={form.location}
-              onChange={set('location')}
-              placeholder="e.g. Istanbul / Remote"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vacancy Status</label>
+            <select
+              value={form.status}
+              onChange={set('status')}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+            >
+              <option value="OPEN">Open</option>
+              <option value="CLOSED">Closed</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
@@ -200,17 +205,6 @@ export default function JobFormPage() {
               value={form.description}
               onChange={set('description')}
               placeholder="Describe the role, responsibilities, and team…"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Requirements</label>
-            <textarea
-              rows={4}
-              value={form.requirements}
-              onChange={set('requirements')}
-              placeholder="List required skills, experience, education…"
               className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
             />
           </div>

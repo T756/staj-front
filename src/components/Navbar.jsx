@@ -1,10 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { getDisplayName } from '../utils/user';
+import { getDisplayName, isEmployer } from '../utils/user';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const employer = isEmployer(user);
 
   const handleLogout = () => {
     logout();
@@ -25,7 +26,7 @@ export default function Navbar() {
 
           {user ? (
             <>
-              {user.is_employer && (
+              {employer && (
                 <Link
                   to="/employer/jobs"
                   className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
@@ -33,7 +34,7 @@ export default function Navbar() {
                   My Listings
                 </Link>
               )}
-              {user.is_employer && (
+              {employer && (
                 <Link
                   to="/employer/jobs/new"
                   className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg transition-colors"
@@ -41,6 +42,28 @@ export default function Navbar() {
                   Post Job
                 </Link>
               )}
+              {!employer && (
+                <Link
+                  to="/applications/messages"
+                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Messages
+                </Link>
+              )}
+              {employer && (
+                <Link
+                  to="/applications/interviews"
+                  className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+                >
+                  Interviews
+                </Link>
+              )}
+              <Link
+                to="/companies"
+                className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+              >
+                Companies
+              </Link>
               <Link
                 to="/dashboard"
                 className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"

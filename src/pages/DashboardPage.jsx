@@ -2,18 +2,21 @@ import { useState, useEffect } from 'react';
 import { listApplications } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import { getDisplayName } from '../utils/user';
+import { getDisplayName, isEmployer } from '../utils/user';
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  reviewing: 'bg-blue-100 text-blue-800',
-  accepted: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
-  withdrawn: 'bg-gray-100 text-gray-500',
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  VIEWED: 'bg-blue-100 text-blue-800',
+  INTERVIEW: 'bg-purple-100 text-purple-800',
+  OFFER: 'bg-teal-100 text-teal-800',
+  ACCEPTED: 'bg-green-100 text-green-800',
+  REJECTED: 'bg-red-100 text-red-800',
+  WITHDRAWN: 'bg-gray-100 text-gray-500',
 };
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const employer = isEmployer(user);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -30,7 +33,7 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    if (user?.is_employer) {
+    if (employer) {
       // Employers don't have "my applications" — skip fetching and show employer actions
       setApplications([]);
       setLoading(false);
@@ -38,7 +41,7 @@ export default function DashboardPage() {
     }
 
     fetchApplications();
-  }, []);
+  }, [employer]);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
@@ -59,11 +62,11 @@ export default function DashboardPage() {
 
       <div className="bg-white rounded-2xl border border-gray-200 p-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-6">
-          {user?.is_employer ? 'Employer Dashboard' : 'My Applications'}
+          {employer ? 'Employer Dashboard' : 'My Applications'}
         </h2>
 
-        {user?.is_employer ? (
-          <div className="grid sm:grid-cols-2 gap-4">
+        {employer ? (
+          <div className="grid sm:grid-cols-3 gap-4">
             <div className="p-6 border rounded-xl bg-indigo-50">
               <h3 className="font-semibold text-gray-900">Manage Job Listings</h3>
               <p className="text-sm text-gray-500 mt-2">View applicants and edit your posted jobs.</p>
@@ -89,6 +92,19 @@ export default function DashboardPage() {
                 </Link>
               </div>
             </div>
+
+            <div className="p-6 border rounded-xl">
+              <h3 className="font-semibold text-gray-900">Interviews</h3>
+              <p className="text-sm text-gray-500 mt-2">Schedule and track interview sessions.</p>
+              <div className="mt-4">
+                <Link
+                  to="/applications/interviews"
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm"
+                >
+                  Manage Interviews
+                </Link>
+              </div>
+            </div>
           </div>
         ) : loading ? (
           <div className="flex justify-center py-12">
@@ -99,12 +115,20 @@ export default function DashboardPage() {
         ) : applications.length === 0 ? (
           <div className="text-center py-16">
             <p className="text-gray-400 text-lg mb-4">No applications yet</p>
-            <Link
-              to="/jobs"
-              className="text-indigo-600 hover:underline text-sm font-medium"
-            >
-              Find your first job →
-            </Link>
+            <div className="flex items-center justify-center gap-4">
+              <Link
+                to="/jobs"
+                className="text-indigo-600 hover:underline text-sm font-medium"
+              >
+                Find your first job →
+              </Link>
+              <Link
+                to="/applications/messages"
+                className="text-indigo-600 hover:underline text-sm font-medium"
+              >
+                Open messages
+              </Link>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -130,7 +154,7 @@ export default function DashboardPage() {
 
                 <div className="flex items-center gap-3">
                   <span
-                    className={`text-xs font-medium px-3 py-1 rounded-full capitalize ${
+                    className={`text-xs font-medium px-3 py-1 rounded-full ${
                       STATUS_COLORS[app.status] || 'bg-gray-100 text-gray-600'
                     }`}
                   >

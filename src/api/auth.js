@@ -10,4 +10,6 @@ export const refreshToken = (refresh) =>
 
 export const getMe = () => client.get('/auth/profile/');
 
+export const replaceMe = (data) => client.put('/auth/profile/', data);
+
 export const updateMe = (data) => client.patch('/auth/profile/', data);

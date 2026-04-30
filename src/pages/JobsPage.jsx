@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { listJobs } from '../api/jobs';
+import { searchVacancies } from '../api/search';
 import JobCard from '../components/JobCard';
 
 const JOB_TYPES = [
@@ -25,11 +26,20 @@ export default function JobsPage() {
     setLoading(true);
     setError('');
     try {
-      const { data } = await listJobs({
-        search: search || undefined,
+      const queryParams = {
         employment_type: jobType || undefined,
         ...params,
-      });
+      };
+
+      const { data } = search
+        ? await searchVacancies({
+          q: search,
+          ...queryParams,
+        })
+        : await listJobs({
+          ...queryParams,
+        });
+
       // Handle both paginated and non-paginated responses
       if (data.results) {
         setJobs(data.results);
@@ -38,6 +48,8 @@ export default function JobsPage() {
         setCount(data.count);
       } else {
         setJobs(Array.isArray(data) ? data : []);
+        setNextUrl(null);
+        setPrevUrl(null);
         setCount(Array.isArray(data) ? data.length : 0);
       }
     } catch {

@@ -11,6 +11,9 @@ import DashboardPage from './pages/DashboardPage';
 import ProfilePage from './pages/ProfilePage';
 import JobFormPage from './pages/JobFormPage';
 import EmployerJobsPage from './pages/EmployerJobsPage';
+import CompaniesPage from './pages/CompaniesPage';
+import MessagesPage from './pages/MessagesPage';
+import InterviewsPage from './pages/InterviewsPage';
 
 export default function App() {
   return (
@@ -40,6 +43,30 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/companies"
+              element={
+                <ProtectedRoute>
+                  <CompaniesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications/messages"
+              element={
+                <ProtectedRoute>
+                  <MessagesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications/interviews"
+              element={
+                <ProtectedRoute>
+                  <InterviewsPage />
                 </ProtectedRoute>
               }
             />
