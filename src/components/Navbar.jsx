@@ -38,6 +38,12 @@ export default function Navbar() {
               >
                 Dashboard
               </Link>
+              <Link
+                to="/profile"
+                className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
+              >
+                Profile
+              </Link>
               <span className="text-sm text-gray-500 hidden sm:block">
                 {user.email}
               </span>

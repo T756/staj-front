@@ -1,13 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { applyToJob } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { listResumes } from '../api/resumes';
 
 export default function ApplyModal({ job, onClose, onSuccess }) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [coverLetter, setCoverLetter] = useState('');
   const [resumeId, setResumeId] = useState('');
+  const [resumes, setResumes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -59,6 +61,23 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
     }
   };
 
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      try {
+        const { data } = await listResumes();
+        const list = data.results ?? (Array.isArray(data) ? data : []);
+        if (!mounted) return;
+        setResumes(list);
+        if (!resumeId && list.length > 0) setResumeId(String(list[0].id));
+      } catch {
+        // ignore — user can enter resume id manually
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
   return (
     <div
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
@@ -77,17 +96,30 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resume ID <span className="text-red-500">*</span>
+              Resume <span className="text-red-500">*</span>
             </label>
-            <input
-              type="number"
-              min="1"
-              required
-              value={resumeId}
-              onChange={(e) => setResumeId(e.target.value)}
-              placeholder="e.g. 12"
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
+            {resumes.length > 0 ? (
+              <select
+                required
+                value={resumeId}
+                onChange={(e) => setResumeId(e.target.value)}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                {resumes.map((r) => (
+                  <option key={r.id} value={r.id}>{r.title || `Resume #${r.id}`}</option>
+                ))}
+              </select>
+            ) : (
+              <input
+                type="number"
+                min="1"
+                required
+                value={resumeId}
+                onChange={(e) => setResumeId(e.target.value)}
+                placeholder="Enter resume ID (or add a resume in your profile)"
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            )}
           </div>
 
           <div>
