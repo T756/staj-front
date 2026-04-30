@@ -20,7 +20,12 @@ export default function LoginPage() {
     } catch (err) {
       const data = err.response?.data;
       if (data?.detail) {
-        setError(data.detail);
+        const detail = String(data.detail);
+        if (detail.toLowerCase().includes('not active')) {
+          setError('This account is not active on the backend yet. Please use an active account or contact admin to activate it.');
+        } else {
+          setError(detail);
+        }
       } else if (typeof data === 'object') {
         setError(Object.values(data).flat().join(' '));
       } else {

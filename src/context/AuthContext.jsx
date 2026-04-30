@@ -38,15 +38,15 @@ const detectProfileOnlyResponse = (data) => {
 
 const inferRoleHeuristically = async () => {
   try {
-    await listMyJobs();
-    return 'EMPLOYER';
+    await listApplications();
+    return 'JOB_SEEKER';
   } catch {
-    // not employer or endpoint not allowed
+    // not job seeker or endpoint not allowed
   }
 
   try {
-    await listApplications();
-    return 'JOB_SEEKER';
+    await listMyJobs();
+    return 'EMPLOYER';
   } catch {
     // unresolved
   }
