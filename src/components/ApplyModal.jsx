@@ -3,7 +3,6 @@ import { applyToJob } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { listResumes } from '../api/resumes';
-import { isEmployer } from '../utils/user';
 
 export default function ApplyModal({ job, onClose, onSuccess }) {
   const { user } = useAuth();
@@ -34,23 +33,6 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
               Login
             </button>
           </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isEmployer(user)) {
-    return (
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-8 max-w-md w-full text-center">
-          <h2 className="text-xl font-bold mb-3">Applications are for job seekers</h2>
-          <p className="text-gray-500 mb-6">Employer accounts can post vacancies and manage applicants.</p>
-          <button
-            onClick={onClose}
-            className="px-5 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
-          >
-            Close
-          </button>
         </div>
       </div>
     );
