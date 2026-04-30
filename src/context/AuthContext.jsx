@@ -58,7 +58,7 @@ const normalizeUser = (data) => {
   if (!data) return null;
 
   if (detectProfileOnlyResponse(data)) {
-    const roleHint = getRoleHintFromToken() || localStorage.getItem('role_hint') || null;
+    const roleHint = getRoleHintFromToken() || null;
     return {
       profile: data,
       role: roleHint,
@@ -78,7 +78,7 @@ const normalizeUser = (data) => {
     };
   }
 
-  const role = data.role || getRoleHintFromToken() || localStorage.getItem('role_hint') || null;
+  const role = data.role || getRoleHintFromToken() || null;
 
   return {
     ...data,
@@ -107,10 +107,8 @@ export function AuthProvider({ children }) {
           role: inferredRole,
           is_employer: inferredRole === 'EMPLOYER',
         });
-        if (inferredRole) localStorage.setItem('role_hint', inferredRole);
       } else {
         setUser(normalized);
-        localStorage.setItem('role_hint', normalized.role);
       }
 
       if (normalized?.email) {
@@ -132,15 +130,12 @@ export function AuthProvider({ children }) {
   }, [fetchMe]);
 
   const login = async (email, password) => {
+    // Avoid stale role crossover between different accounts.
+    localStorage.removeItem('role_hint');
     const { data } = await apiLogin(email, password);
     localStorage.setItem('access_token', data.access);
     localStorage.setItem('refresh_token', data.refresh);
     localStorage.setItem('email_hint', email);
-
-    const roleFromToken = getRoleHintFromToken();
-    if (roleFromToken) {
-      localStorage.setItem('role_hint', roleFromToken);
-    }
 
     await fetchMe();
   };
@@ -173,7 +168,6 @@ export function AuthProvider({ children }) {
   const logout = () => {
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
-    localStorage.removeItem('role_hint');
     localStorage.removeItem('email_hint');
     setUser(null);
   };

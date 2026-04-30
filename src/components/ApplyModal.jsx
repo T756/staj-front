@@ -128,15 +128,18 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
                 ))}
               </select>
             ) : (
-              <input
-                type="number"
-                min="1"
-                required
-                value={resumeId}
-                onChange={(e) => setResumeId(e.target.value)}
-                placeholder="Enter resume ID (or add a resume in your profile)"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
+              <div className="space-y-2">
+                <p className="text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                  You need at least one resume before applying.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="text-sm text-indigo-600 hover:underline"
+                >
+                  Go to Profile to create resume
+                </button>
+              </div>
             )}
           </div>
 
@@ -163,7 +166,7 @@ export default function ApplyModal({ job, onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || resumes.length === 0}
               className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium transition-colors disabled:opacity-60"
             >
               {loading ? 'Submitting…' : 'Submit Application'}

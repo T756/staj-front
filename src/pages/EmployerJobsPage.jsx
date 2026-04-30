@@ -104,6 +104,13 @@ export default function EmployerJobsPage() {
     }
   };
 
+  const canApplicantMessage = (application) => application.status !== 'PENDING';
+
+  const handleMessagingPermission = async (application, allow) => {
+    const nextStatus = allow ? 'VIEWED' : 'PENDING';
+    await handleStatusUpdate(application.id, nextStatus);
+  };
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-8">
@@ -238,6 +245,14 @@ export default function EmployerJobsPage() {
                   )}
 
                   <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={statusLoadingId === app.id}
+                      onClick={() => handleMessagingPermission(app, !canApplicantMessage(app))}
+                      className="text-xs px-2.5 py-1 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    >
+                      {canApplicantMessage(app) ? 'Block Applicant Message' : 'Allow Applicant Message'}
+                    </button>
                     <button
                       type="button"
                       disabled={statusLoadingId === app.id}

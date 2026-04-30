@@ -16,6 +16,19 @@ const emptyResume = {
   visibility: 'PUBLIC',
 };
 
+const extractProfile = (data) => {
+  if (!data || typeof data !== 'object') return {};
+  if (data.profile && typeof data.profile === 'object') return data.profile;
+  return {
+    first_name: data.first_name || '',
+    last_name: data.last_name || '',
+    phone: data.phone || '',
+    city: data.city || '',
+    birth_date: data.birth_date || null,
+    avatar: data.avatar || null,
+  };
+};
+
 export default function ProfilePage() {
   const { user, loading: authLoading } = useAuth();
   const jobSeeker = isJobSeeker(user);
@@ -38,7 +51,7 @@ export default function ProfilePage() {
         const resumesPromise = jobSeeker ? listResumes() : Promise.resolve({ data: [] });
         const [{ data: meData }, { data: resumesData }] = await Promise.all([mePromise, resumesPromise]);
         if (!mounted) return;
-        setProfile(meData.profile ?? {});
+        setProfile(extractProfile(meData));
         setResumes(resumesData.results ?? (Array.isArray(resumesData) ? resumesData : []));
       } catch (err) {
         setError('Failed to load profile.');
@@ -59,7 +72,7 @@ export default function ProfilePage() {
       await updateMe(payload);
       // refresh page data
       const { data } = await getMe();
-      setProfile(data.profile ?? {});
+      setProfile(extractProfile(data));
     } catch (err) {
       setError('Failed to update profile.');
     } finally {

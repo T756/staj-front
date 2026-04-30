@@ -36,7 +36,9 @@ export default function MessagesPage() {
         appList = appResponses.flatMap((res) => res.data.results ?? (Array.isArray(res.data) ? res.data : []));
       } else {
         const { data: appsData } = await listApplications();
-        appList = appsData.results ?? (Array.isArray(appsData) ? appsData : []);
+        const rawApps = appsData.results ?? (Array.isArray(appsData) ? appsData : []);
+        // Employer can allow applicant messaging by moving status away from PENDING.
+        appList = rawApps.filter((app) => app.status !== 'PENDING');
       }
 
       setApplications(appList);
@@ -102,6 +104,11 @@ export default function MessagesPage() {
             As an employer, you can message applicants from your vacancy applications.
           </p>
         )}
+        {!employer && (
+          <p className="text-sm text-gray-500 mb-4">
+            You can message employers only for applications where messaging is allowed.
+          </p>
+        )}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Application</label>
@@ -111,7 +118,7 @@ export default function MessagesPage() {
               onChange={(e) => setForm((f) => ({ ...f, application: e.target.value }))}
               className="w-full border border-gray-300 rounded-lg px-3 py-2"
             >
-              {applications.length === 0 && <option value="">No applications</option>}
+              {applications.length === 0 && <option value="">No available applications for messaging</option>}
               {applications.map((a) => (
                 <option key={a.id} value={a.id}>
                   #{a.id} · {a.vacancy_title || `Vacancy ${a.vacancy}`}
