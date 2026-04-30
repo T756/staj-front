@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { listApplications } from '../api/applications';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import { getDisplayName } from '../utils/user';
 
 const STATUS_COLORS = {
   pending: 'bg-yellow-100 text-yellow-800',
@@ -45,7 +46,7 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Dashboard</h1>
           <p className="text-gray-500 mt-1">
-            Welcome back, {user?.first_name || user?.email}
+            Welcome back, {getDisplayName(user)}
           </p>
         </div>
         <Link

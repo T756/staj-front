@@ -7,6 +7,7 @@ import {
   updateResume,
   deleteResume,
 } from '../api/resumes';
+import { getDisplayName } from '../utils/user';
 
 const emptyResume = {
   title: '',
@@ -138,7 +139,9 @@ export default function ProfilePage() {
     <div className="max-w-6xl mx-auto px-4 py-10 space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="text-gray-500 mt-1">Update your personal info and manage your resumes.</p>
+        <p className="text-gray-500 mt-1">
+          {getDisplayName(user) || 'Your account'} · Update your personal info and manage your resumes.
+        </p>
       </div>
 
       <div className="grid lg:grid-cols-[1.1fr_0.9fr] gap-6">

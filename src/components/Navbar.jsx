@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getDisplayName } from '../utils/user';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -32,6 +33,14 @@ export default function Navbar() {
                   My Listings
                 </Link>
               )}
+              {user.is_employer && (
+                <Link
+                  to="/employer/jobs/new"
+                  className="text-sm bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded-lg transition-colors"
+                >
+                  Post Job
+                </Link>
+              )}
               <Link
                 to="/dashboard"
                 className="text-sm text-gray-600 hover:text-indigo-600 transition-colors"
@@ -45,7 +54,7 @@ export default function Navbar() {
                 Profile
               </Link>
               <span className="text-sm text-gray-500 hidden sm:block">
-                {user.email}
+                {getDisplayName(user)}
               </span>
               <button
                 onClick={handleLogout}
